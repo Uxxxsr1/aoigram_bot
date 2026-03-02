@@ -15,3 +15,9 @@ def get_confirm_kb():
         [InlineKeyboardButton(text="Отменить", callback_data="cancel")],
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+def get_help_kb():
+    buttons = [
+        [InlineKeyboardButton(text="Документация", callback_data="doc")],
+        [InlineKeyboardButton(text="Поддержка", callback_data="support")],
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
