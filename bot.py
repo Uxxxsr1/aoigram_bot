@@ -6,6 +6,7 @@ from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
 
 from config import TOKEN
+from db import init_db, save_user, get_user_info
 from keyboards import get_main_menu, get_confirm_kb, get_help_kb
 from states import Regestration
 
@@ -64,9 +65,15 @@ async def process_age(message: Message, state: FSMContext):
 async def confirm_callback(callback_query: CallbackQuery, state: FSMContext):
     data = await state.get_data()
     user_id = callback_query.from_user.id
+    save_user(
+        user_id,
+        data['name'],
+        data['age']
+    )
     await state.clear()
     await callback_query.answer("Регистрация завершена")
     await callback_query.message.edit_text("Спасибо за регистрацию!")
+
 
 @dp.callback_query(lambda c: c.data == "cancel")
 async def cancel_callback(callback_query: CallbackQuery, state: FSMContext):
@@ -83,8 +90,24 @@ async def doc_callback(callback_query: CallbackQuery):
 async def support_callback(callback_query: CallbackQuery):
     await callback_query.answer("Поддержка находится по ссылке t.me/openi486")
 
+@dp.message(lambda message: message.text == 'Моя анкета')
+async def show_profile(message: Message):
+    user = get_user_info(message.from_user.id)
+    if not user:
+        await message.answer('Вы еще не были зарегистрированны')
+        return
+    text = f'''
+        <b>Ваша анкета</b>
+        Имя: {user['Name']}
+        Возраст {user['Age']}
+        Дата регестрации {user['CreatedAt']} 
+    '''
+    await message.answer(text)
+
 async def main():
+    init_db()
     await dp.start_polling(bot)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
